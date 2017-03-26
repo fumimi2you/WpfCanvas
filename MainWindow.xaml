@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfCanvas"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1000" Width="950">
-    <StackPanel HorizontalAlignment="Left">
-        <Button Content="ランダム生成" Click="Clk_CreateObject" />
-        <Button Content="集約" Click="Clk_Aggregation" />
-        <Button Content="拡散" Click="Clk_Diffusion" />
+        Title="MainWindow" Height="800" Width="1280">
+    <StackPanel Orientation="Horizontal">
+        <Button Content="DataLoad" Click="Clk_DataLoad" Height="20"  VerticalAlignment="Top" />
+        <Button Content="ランダム生成" Click="Clk_CreateObject" Height="20" VerticalAlignment="Top"/>
+        <Button Content="集約" Click="Clk_Aggregation" Height="20" VerticalAlignment="Top" />
+        <Button Content="拡散" Click="Clk_Diffusion" Height="20" VerticalAlignment="Top" />
+        <Button Content="分類" Click="Clk_Classification" Height="20" VerticalAlignment="Top" />
         <Canvas x:Name="canvas1" >
         </Canvas>
     </StackPanel>

@@ -13,6 +13,8 @@ namespace WpfCanvas
         public PT(double ix, double iy) { x = ix; y = iy; }
         public double x { get; set; } = 0;
         public double y { get; set; } = 0;
+        public double vx { get; set; } = 0;
+        public double vy { get; set; } = 0;
 
         public static PT Delta(PT ptMain, PT ptSub)
         {
@@ -68,7 +70,8 @@ namespace WpfCanvas
         const int Resolution = 100;     //  分解能≒精度
         const double AggregationGain = 0.1; //  集約の強さ
         const double DiffusionGain = 0.02; //  拡散の強さ
-        const double Fluctuations = 0.02;  //  ゆらぎの大きさ
+        const double ClassificationGain = 0.2; //  分類の強さ
+        const double Fluctuations = 0.2;  //  ゆらぎの大きさ
 
         Random RandSeed = new Random();
 
@@ -190,6 +193,38 @@ namespace WpfCanvas
         }
 
 
+        //  分類計算
+        public void Classification()
+        {
+            //  目標座標のスケーリング
+            double rL = Objects[0].vx;
+            double rT = Objects[0].vy;
+            double rR = Objects[0].vx;
+            double rB = Objects[0].vy;
+            foreach (var pt1 in Objects)
+            {
+                rL = Math.Min(rL, pt1.vx);
+                rT = Math.Min(rT, pt1.vy);
+                rR = Math.Max(rR, pt1.vx);
+                rB = Math.Max(rB, pt1.vy);
+            }
+
+
+            foreach (var pt1 in Objects)
+            {
+                VCT vctP1 = new VCT();
+
+                //  目標座標までの引力を計算
+                PT pt2 = new PT(    (pt1.vx - rL) * (ValidRect.Width ) / (rR - rL),
+                                    (pt1.vy - rT) * (ValidRect.Height) / (rB - rT) );
+                pt1.x = pt2.x * ClassificationGain + pt1.x * (1 - ClassificationGain);
+                pt1.y = pt2.y * ClassificationGain + pt1.y * (1 - ClassificationGain);
+
+                //  ゆらぎの取り入れ
+                pt1.x += ObjSize * MakeFluctuations();
+                pt1.y += ObjSize * MakeFluctuations();
+            }
+        }
 
         //  座標移動
         void Move(List<VCT> vectors, double Normalize)
@@ -202,8 +237,8 @@ namespace WpfCanvas
                 Objects[i].y += dy / Resolution;
 
                 //  ゆらぎの取り入れ
-                Objects[i].x += Fluctuations * ObjSize * 2 * (RandSeed.NextDouble() - 0.5);
-                Objects[i].y += Fluctuations * ObjSize * 2 * (RandSeed.NextDouble() - 0.5);
+                Objects[i].x += ObjSize * MakeFluctuations() / Math.Sqrt(Resolution);
+                Objects[i].y += ObjSize * MakeFluctuations() / Math.Sqrt(Resolution);
 
                 //  壁でバウンド
                 if (Objects[i].x < ValidRect.Left)   { Objects[i].x += 2 * (ValidRect.Left - Objects[i].x); }
@@ -211,6 +246,10 @@ namespace WpfCanvas
                 if (Objects[i].x > ValidRect.Right)  { Objects[i].x -= 2 * (Objects[i].x - ValidRect.Right); }
                 if (Objects[i].y > ValidRect.Bottom) { Objects[i].y -= 2 * (Objects[i].y - ValidRect.Bottom); }
             }
+        }
+
+        double MakeFluctuations() {
+            return Fluctuations * 2 * (RandSeed.NextDouble() - 0.5);
         }
     }
 }
